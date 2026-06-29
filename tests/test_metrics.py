@@ -19,6 +19,12 @@ class MetricTests(unittest.TestCase):
             "conntrack_count": "42\n",
             "conntrack_max": "1024\n",
             "dhcp_leases": "1760000000 aa:bb:cc:dd:ee:ff 10.1.10.50 laptop 01:aa\n",
+            "arp_table": (
+                "Address                  HWtype  HWaddress           Flags Mask            Iface\n"
+                "10.1.10.50               ether   aa:bb:cc:dd:ee:ff   C                     br0\n"
+                "10.1.10.60               ether   22:33:44:55:66:77   C                     br0\n"
+                "192.168.1.254            ether   11:22:33:44:55:66   C                     eth0\n"
+            ),
             "proc_net_snmp": (
                 "Tcp: RtoAlgorithm RtoMin RtoMax MaxConn ActiveOpens CurrEstab RetransSegs\n"
                 "Tcp: 1 200 120000 -1 10 3 99\n"
@@ -35,6 +41,12 @@ class MetricTests(unittest.TestCase):
         self.assertIn('asus_snmp_tcp_retrans_segs_total{router="gt_axe16000"} 99', output)
         self.assertIn(
             'asus_dhcp_lease_info{client_id="01:aa",hostname="laptop",ip="10.1.10.50",mac="aa:bb:cc:dd:ee:ff",router="gt_axe16000"} 1',
+            output,
+        )
+        self.assertIn('asus_arp_entries{router="gt_axe16000"} 2', output)
+        self.assertIn('asus_static_ip_assignments_active{router="gt_axe16000"} 1', output)
+        self.assertIn(
+            'asus_static_ip_assignments_active_by_interface{interface="br0",router="gt_axe16000"} 1',
             output,
         )
 

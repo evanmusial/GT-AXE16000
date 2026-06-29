@@ -37,8 +37,22 @@ class DhcpLease:
     client_id: str
 
 
+@dataclass(frozen=True)
+class ArpEntry:
+    ip: str
+    mac: str
+    interface: str
+    flags: str
+
+
 BEGIN_RE = re.compile(r"^__ASUS_EXPORTER_BEGIN__\s+([A-Za-z0-9_.:-]+)\s*$")
 END_RE = re.compile(r"^__ASUS_EXPORTER_END__\s+([A-Za-z0-9_.:-]+)\s*$")
+IPV4_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
+MAC_RE = re.compile(r"^[0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5}$")
+BUSYBOX_ARP_RE = re.compile(
+    r"\((?P<ip>\d{1,3}(?:\.\d{1,3}){3})\)\s+at\s+"
+    r"(?P<mac>[0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5})\s+.*\s+on\s+(?P<iface>\S+)"
+)
 
 
 def parse_sections(output: str) -> dict[str, str]:
@@ -176,6 +190,40 @@ def parse_dhcp_leases(text: str) -> list[DhcpLease]:
             )
         )
     return leases
+
+
+def parse_arp_table(text: str) -> list[ArpEntry]:
+    entries: list[ArpEntry] = []
+    for raw_line in text.splitlines():
+        busybox_match = BUSYBOX_ARP_RE.search(raw_line)
+        if busybox_match:
+            entries.append(
+                ArpEntry(
+                    ip=busybox_match.group("ip"),
+                    mac=busybox_match.group("mac").lower(),
+                    interface=busybox_match.group("iface"),
+                    flags="",
+                )
+            )
+            continue
+
+        parts = raw_line.split()
+        if len(parts) < 4 or not IPV4_RE.match(parts[0]):
+            continue
+
+        mac = next((part.lower() for part in parts if MAC_RE.match(part)), "")
+        if not mac or mac == "00:00:00:00:00:00":
+            continue
+
+        interface = parts[-1]
+        flags = ""
+        for part in parts[1:]:
+            if part.startswith("0x") or part in {"C", "M", "CM", "PERM"}:
+                flags = part
+                break
+
+        entries.append(ArpEntry(ip=parts[0], mac=mac, interface=interface, flags=flags))
+    return entries
 
 
 _FIRST_CAP_RE = re.compile("(.)([A-Z][a-z]+)")

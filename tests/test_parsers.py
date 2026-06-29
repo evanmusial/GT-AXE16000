@@ -2,6 +2,7 @@ import unittest
 
 from asus_exporter.parsers import (
     parse_dhcp_leases,
+    parse_arp_table,
     parse_loadavg,
     parse_meminfo,
     parse_net_dev,
@@ -61,6 +62,25 @@ Cached:           10 kB
         self.assertEqual(leases[0].hostname, "laptop")
         self.assertEqual(leases[1].hostname, "")
         self.assertEqual(leases[1].client_id, "")
+
+    def test_parse_arp_table(self):
+        entries = parse_arp_table(
+            """
+Address                  HWtype  HWaddress           Flags Mask            Iface
+10.1.10.50               ether   aa:bb:cc:dd:ee:ff   C                     br0
+10.1.10.51               ether   (incomplete)                              br0
+192.168.1.254            ether   11:22:33:44:55:66   C                     eth0
+? (10.1.10.60) at 22:33:44:55:66:77 [ether]  on br0
+? (10.1.10.61) at <incomplete>  on br0
+"""
+        )
+        self.assertEqual(len(entries), 3)
+        self.assertEqual(entries[0].ip, "10.1.10.50")
+        self.assertEqual(entries[0].mac, "aa:bb:cc:dd:ee:ff")
+        self.assertEqual(entries[0].interface, "br0")
+        self.assertEqual(entries[1].interface, "eth0")
+        self.assertEqual(entries[2].ip, "10.1.10.60")
+        self.assertEqual(entries[2].interface, "br0")
 
     def test_parse_sections(self):
         sections = parse_sections(

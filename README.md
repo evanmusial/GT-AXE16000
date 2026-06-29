@@ -84,9 +84,15 @@ The initial exporter covers:
 - Memory totals/free/available/buffers/cache.
 - Conntrack current/max entries.
 - DHCP lease count and lease metadata.
+- Active static-IP clients inferred from ARP entries on non-WAN interfaces
+  whose IPs are not present in current DHCP leases.
 - Protocol counters from `/proc/net/snmp` and `/proc/net/netstat`.
 - Exporter self-metrics for scrape success, duration, last success timestamp,
   and SSH error count.
+
+Static-IP counts are active-client counts, not an inventory of offline static
+assignments. A manually configured device must have a current ARP entry for the
+router to see it.
 
 Useful PromQL examples:
 
@@ -96,6 +102,7 @@ rate(asus_netdev_transmit_bytes_total{router="gt_axe16000",interface="eth0"}[5m]
 increase(asus_netdev_receive_bytes_total{router="gt_axe16000",interface="eth0"}[1d])
 asus_conntrack_entries{router="gt_axe16000"} / asus_conntrack_entries_max{router="gt_axe16000"} * 100
 rate(asus_snmp_tcp_retrans_segs_total{router="gt_axe16000"}[5m])
+asus_static_ip_assignments_active{router="gt_axe16000"}
 ```
 
 ## Prometheus and Grafana

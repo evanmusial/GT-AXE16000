@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from collections import Counter
 import math
 import time
 from typing import Iterable
 
 from .config import ExporterConfig
 from .parsers import (
+    ArpEntry,
     parse_dhcp_leases,
+    parse_arp_table,
     parse_int,
     parse_loadavg,
     parse_meminfo,
@@ -147,6 +150,7 @@ def build_router_samples(sections: dict[str, str], config: ExporterConfig) -> li
     )
 
     leases = parse_dhcp_leases(sections.get("dhcp_leases", ""))
+    lease_ips = {lease.ip for lease in leases}
     builder.add(
         "asus_dhcp_leases",
         len(leases),
@@ -167,6 +171,32 @@ def build_router_samples(sections: dict[str, str], config: ExporterConfig) -> li
             help_text="DHCP lease metadata. Value is always 1.",
         )
 
+    arp_entries = parse_arp_table(sections.get("arp_table", ""))
+    lan_arp_entries = _lan_arp_entries(arp_entries, config)
+    static_entries = [entry for entry in lan_arp_entries if entry.ip not in lease_ips]
+    builder.add(
+        "asus_arp_entries",
+        len(lan_arp_entries),
+        labels=base_labels,
+        help_text="Complete ARP entries on non-WAN interfaces.",
+    )
+    builder.add(
+        "asus_static_ip_assignments_active",
+        len(static_entries),
+        labels=base_labels,
+        help_text=(
+            "Active non-DHCP clients inferred from complete ARP entries on "
+            "non-WAN interfaces whose IPs are absent from current DHCP leases."
+        ),
+    )
+    for interface, count in sorted(Counter(entry.interface for entry in static_entries).items()):
+        builder.add(
+            "asus_static_ip_assignments_active_by_interface",
+            count,
+            labels={**base_labels, "interface": interface},
+            help_text="Active inferred non-DHCP clients by router interface.",
+        )
+
     _add_protocol_samples(
         builder,
         sections.get("proc_net_snmp", ""),
@@ -183,6 +213,12 @@ def build_router_samples(sections: dict[str, str], config: ExporterConfig) -> li
     )
 
     return builder.samples
+
+
+def _lan_arp_entries(entries: list[ArpEntry], config: ExporterConfig) -> list[ArpEntry]:
+    if not config.wan_interface:
+        return entries
+    return [entry for entry in entries if entry.interface != config.wan_interface]
 
 
 def build_exporter_samples(

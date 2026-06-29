@@ -65,6 +65,7 @@ emit_section proc_meminfo cat /proc/meminfo
 emit_conntrack_file conntrack_count /proc/sys/net/netfilter/nf_conntrack_count /proc/sys/net/ipv4/netfilter/ip_conntrack_count
 emit_conntrack_file conntrack_max /proc/sys/net/netfilter/nf_conntrack_max /proc/sys/net/ipv4/netfilter/ip_conntrack_max
 emit_dhcp_leases
+emit_section arp_table arp -n
 """
 
 

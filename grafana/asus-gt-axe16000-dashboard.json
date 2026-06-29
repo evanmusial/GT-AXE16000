@@ -382,19 +382,29 @@
       "id": 9,
       "targets": [
         {
-          "expr": "asus_load1{router=\"$router\"}",
-          "legendFormat": "load 1m",
+          "expr": "asus_dhcp_leases{router=\"$router\"}",
+          "legendFormat": "DHCP leases",
           "refId": "A"
         },
         {
-          "expr": "asus_dhcp_leases{router=\"$router\"}",
-          "legendFormat": "DHCP leases",
+          "expr": "asus_static_ip_assignments_active{router=\"$router\"}",
+          "legendFormat": "active static IPs",
           "refId": "B"
+        },
+        {
+          "expr": "asus_arp_entries{router=\"$router\"}",
+          "legendFormat": "active LAN ARP entries",
+          "refId": "C"
+        },
+        {
+          "expr": "asus_load1{router=\"$router\"}",
+          "legendFormat": "load 1m",
+          "refId": "D"
         },
         {
           "expr": "asus_memory_mem_available_bytes{router=\"$router\"} / 1024 / 1024",
           "legendFormat": "available memory MiB",
-          "refId": "C"
+          "refId": "E"
         }
       ],
       "title": "Router Stats",
