@@ -11,7 +11,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "qgXJ0MD4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -44,7 +44,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "qgXJ0MD4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -77,7 +77,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "qgXJ0MD4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -110,7 +110,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "qgXJ0MD4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -138,7 +138,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "qgXJ0MD4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -176,7 +176,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "qgXJ0MD4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -230,7 +230,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "qgXJ0MD4k"
         },
         "definition": "label_values(asus_uptime_seconds, router)",
         "hide": 0,
@@ -247,10 +247,14 @@
         "type": "query"
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "eth0",
+          "value": "eth0"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "qgXJ0MD4k"
         },
         "definition": "label_values(asus_netdev_receive_bytes_total{router=\"$router\"}, interface)",
         "hide": 0,
