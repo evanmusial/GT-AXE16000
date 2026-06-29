@@ -15,46 +15,117 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "bps",
-          "decimals": 2
+          "unit": "short",
+          "decimals": 2,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "download Mbps"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#00cc00"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "upload Mbps"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#0000ff"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 5,
+        "h": 10,
         "w": 24,
         "x": 0,
         "y": 0
       },
       "id": 1,
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
       "targets": [
         {
-          "expr": "rate(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[5m]) * 8",
-          "legendFormat": "download",
+          "expr": "rate(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[5m]) * 8 / 1000000",
+          "legendFormat": "download Mbps",
           "refId": "A"
         },
         {
-          "expr": "rate(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[5m]) * 8",
-          "legendFormat": "upload",
+          "expr": "rate(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[5m]) * 8 / 1000000",
+          "legendFormat": "upload Mbps",
           "refId": "B"
         }
       ],
-      "title": "Current WAN Throughput",
-      "type": "stat",
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      }
+      "title": "WAN Throughput (Mbps)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -63,31 +134,116 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "bps",
-          "decimals": 2
+          "unit": "short",
+          "decimals": 2,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "download MiB/s"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#00cc00"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "upload MiB/s"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#0000ff"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 10,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 10
       },
       "id": 2,
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
       "targets": [
         {
-          "expr": "rate(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[5m]) * 8",
-          "legendFormat": "{{interface}} download",
+          "expr": "rate(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[5m]) / 1024 / 1024",
+          "legendFormat": "download MiB/s",
           "refId": "A"
         },
         {
-          "expr": "rate(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[5m]) * 8",
-          "legendFormat": "{{interface}} upload",
+          "expr": "rate(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[5m]) / 1024 / 1024",
+          "legendFormat": "upload MiB/s",
           "refId": "B"
         }
       ],
-      "title": "WAN Throughput",
+      "title": "WAN Throughput (MiB/s)",
       "type": "timeseries"
     },
     {
@@ -98,26 +254,111 @@
       "fieldConfig": {
         "defaults": {
           "unit": "pps",
-          "decimals": 2
+          "decimals": 2,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RX packets/s"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#00cc00"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TX packets/s"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#0000ff"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 7,
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 13
+        "y": 20
       },
       "id": 3,
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
       "targets": [
         {
           "expr": "rate(asus_netdev_receive_packets_total{router=\"$router\",role=\"wan\"}[5m])",
-          "legendFormat": "{{interface}} RX packets/s",
+          "legendFormat": "RX packets/s",
           "refId": "A"
         },
         {
           "expr": "rate(asus_netdev_transmit_packets_total{router=\"$router\",role=\"wan\"}[5m])",
-          "legendFormat": "{{interface}} TX packets/s",
+          "legendFormat": "TX packets/s",
           "refId": "B"
         }
       ],
@@ -132,17 +373,71 @@
       "fieldConfig": {
         "defaults": {
           "unit": "ops",
-          "decimals": 3
+          "decimals": 4,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 13
+        "y": 20
       },
       "id": 4,
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
       "targets": [
         {
           "expr": "rate(asus_netdev_receive_errs_total{router=\"$router\",role=\"wan\"}[5m])",
@@ -175,129 +470,72 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "bytes",
-          "decimals": 2
+          "unit": "ops",
+          "decimals": 4,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 20
+        "y": 28
       },
       "id": 5,
-      "targets": [
-        {
-          "expr": "increase(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[1h])",
-          "legendFormat": "download last hour",
-          "refId": "A"
-        },
-        {
-          "expr": "increase(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[1h])",
-          "legendFormat": "upload last hour",
-          "refId": "B"
-        },
-        {
-          "expr": "increase(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[1d])",
-          "legendFormat": "download last 24h",
-          "refId": "C"
-        },
-        {
-          "expr": "increase(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[1d])",
-          "legendFormat": "upload last 24h",
-          "refId": "D"
-        }
-      ],
-      "title": "Recent WAN Usage",
-      "type": "stat",
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
           "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "qgXJ0MD4k"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 2
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 20
-      },
-      "id": 6,
-      "targets": [
-        {
-          "expr": "asus_conntrack_entries{router=\"$router\"}",
-          "legendFormat": "entries",
-          "refId": "A"
-        },
-        {
-          "expr": "asus_conntrack_entries_max{router=\"$router\"}",
-          "legendFormat": "max",
-          "refId": "B"
-        },
-        {
-          "expr": "asus_conntrack_entries{router=\"$router\"} / asus_conntrack_entries_max{router=\"$router\"} * 100",
-          "legendFormat": "used %",
-          "refId": "C"
+            "lastNotNull",
+            "max"
+          ]
         }
-      ],
-      "title": "Conntrack",
-      "type": "stat",
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "qgXJ0MD4k"
       },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "ops",
-          "decimals": 4
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 26
-      },
-      "id": 7,
       "targets": [
         {
           "expr": "rate(asus_snmp_tcp_retrans_segs_total{router=\"$router\"}[5m])",
@@ -325,61 +563,72 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "d",
-          "decimals": 1
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 12,
-        "y": 26
-      },
-      "id": 8,
-      "targets": [
-        {
-          "expr": "asus_uptime_seconds{router=\"$router\"} / 86400",
-          "legendFormat": "uptime",
-          "refId": "A"
-        }
-      ],
-      "title": "Uptime",
-      "type": "stat",
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      }
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "qgXJ0MD4k"
-      },
-      "fieldConfig": {
-        "defaults": {
           "unit": "short",
-          "decimals": 2
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 8,
         "w": 12,
         "x": 12,
-        "y": 30
+        "y": 28
       },
-      "id": 9,
+      "id": 6,
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
       "targets": [
         {
           "expr": "asus_dhcp_leases{router=\"$router\"}",
@@ -395,34 +644,10 @@
           "expr": "asus_arp_entries{router=\"$router\"}",
           "legendFormat": "active LAN ARP entries",
           "refId": "C"
-        },
-        {
-          "expr": "asus_load1{router=\"$router\"}",
-          "legendFormat": "load 1m",
-          "refId": "D"
-        },
-        {
-          "expr": "asus_memory_mem_available_bytes{router=\"$router\"} / 1024 / 1024",
-          "legendFormat": "available memory MiB",
-          "refId": "E"
         }
       ],
-      "title": "Router Stats",
-      "type": "stat",
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      }
+      "title": "Active Clients",
+      "type": "timeseries"
     }
   ],
   "refresh": "1m",
@@ -462,12 +687,12 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-6h",
     "to": "now"
   },
   "timezone": "browser",
   "title": "ASUS GT-AXE16000",
   "uid": "asus-gt-axe16000",
-  "version": 3,
+  "version": 5,
   "weekStart": ""
 }
