@@ -1,0 +1,32 @@
+[Unit]
+Description=ASUS GT-AXE16000 Prometheus Exporter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=asus-exporter
+Group=asus-exporter
+WorkingDirectory=/opt/asus-router-exporter
+Environment=ASUS_ROUTER_HOST=10.1.10.1
+Environment=ASUS_ROUTER_PORT=22122
+Environment=ASUS_ROUTER_USER=admin
+Environment=ASUS_ROUTER_LABEL=gt_axe16000
+Environment=ASUS_WAN_INTERFACE=
+Environment=ASUS_EXPORTER_BIND_ADDRESS=127.0.0.1
+Environment=ASUS_EXPORTER_PORT=9818
+Environment=ASUS_EXPORTER_SCRAPE_INTERVAL_SECONDS=60
+Environment=ASUS_SSH_USER_KNOWN_HOSTS_FILE=/var/lib/asus-router-exporter/known_hosts
+# Optional if the service user needs a specific key:
+# Environment=ASUS_ROUTER_IDENTITY_FILE=/home/asus-exporter/.ssh/asus_gt_axe16000
+ExecStart=/opt/asus-router-exporter/.venv/bin/python -m asus_exporter.exporter
+Restart=on-failure
+RestartSec=5
+StateDirectory=asus-router-exporter
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target

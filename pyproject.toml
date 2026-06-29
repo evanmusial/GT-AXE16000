@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asus-gt-axe16000-exporter"
+version = "0.1.0"
+description = "Prometheus exporter for ASUS GT-AXE16000 router telemetry over SSH."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+asus-router-exporter = "asus_exporter.exporter:main"
+asus-router-recon = "asus_exporter.recon:main"
+
+[tool.setuptools.packages.find]
+include = ["asus_exporter*"]

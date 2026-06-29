@@ -1,0 +1,280 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "rate(asus_netdev_receive_bytes_total{router=\"$router\",interface=\"$wan_interface\"}[$__rate_interval]) * 8",
+          "legendFormat": "download",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(asus_netdev_transmit_bytes_total{router=\"$router\",interface=\"$wan_interface\"}[$__rate_interval]) * 8",
+          "legendFormat": "upload",
+          "refId": "B"
+        }
+      ],
+      "title": "WAN Throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "increase(asus_netdev_receive_bytes_total{router=\"$router\",interface=\"$wan_interface\"}[1d])",
+          "legendFormat": "daily download",
+          "refId": "A"
+        },
+        {
+          "expr": "increase(asus_netdev_transmit_bytes_total{router=\"$router\",interface=\"$wan_interface\"}[1d])",
+          "legendFormat": "daily upload",
+          "refId": "B"
+        }
+      ],
+      "title": "Daily WAN Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "increase(asus_netdev_receive_bytes_total{router=\"$router\",interface=\"$wan_interface\"}[30d])",
+          "legendFormat": "30d download",
+          "refId": "A"
+        },
+        {
+          "expr": "increase(asus_netdev_transmit_bytes_total{router=\"$router\",interface=\"$wan_interface\"}[30d])",
+          "legendFormat": "30d upload",
+          "refId": "B"
+        }
+      ],
+      "title": "Rolling 30 Day WAN Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "asus_conntrack_entries{router=\"$router\"} / asus_conntrack_entries_max{router=\"$router\"} * 100",
+          "legendFormat": "conntrack",
+          "refId": "A"
+        }
+      ],
+      "title": "Conntrack Usage",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "rate(asus_snmp_tcp_retrans_segs_total{router=\"$router\"}[$__rate_interval])",
+          "legendFormat": "TCP retransmits",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(asus_snmp_tcp_attempt_fails_total{router=\"$router\"}[$__rate_interval])",
+          "legendFormat": "TCP attempt fails",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(asus_snmp_tcp_estab_resets_total{router=\"$router\"}[$__rate_interval])",
+          "legendFormat": "TCP resets",
+          "refId": "C"
+        }
+      ],
+      "title": "TCP Health",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "asus_uptime_seconds{router=\"$router\"}",
+          "legendFormat": "uptime seconds",
+          "refId": "A"
+        },
+        {
+          "expr": "asus_load1{router=\"$router\"}",
+          "legendFormat": "load 1m",
+          "refId": "B"
+        },
+        {
+          "expr": "asus_dhcp_leases{router=\"$router\"}",
+          "legendFormat": "DHCP leases",
+          "refId": "C"
+        }
+      ],
+      "title": "Router Health",
+      "type": "stat"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "asus",
+    "router",
+    "prometheus"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "gt_axe16000",
+          "value": "gt_axe16000"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(asus_uptime_seconds, router)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Router",
+        "multi": false,
+        "name": "router",
+        "options": [],
+        "query": {
+          "query": "label_values(asus_uptime_seconds, router)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(asus_netdev_receive_bytes_total{router=\"$router\"}, interface)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "WAN Interface",
+        "multi": false,
+        "name": "wan_interface",
+        "options": [],
+        "query": {
+          "query": "label_values(asus_netdev_receive_bytes_total{router=\"$router\"}, interface)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "ASUS GT-AXE16000",
+  "uid": "asus-gt-axe16000",
+  "version": 1,
+  "weekStart": ""
+}
