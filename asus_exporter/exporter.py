@@ -39,6 +39,23 @@ emit_conntrack_file() {
   printf '\n__ASUS_EXPORTER_END__ %s\n' "$name"
 }
 
+emit_dhcp_leases() {
+  printf '\n__ASUS_EXPORTER_BEGIN__ dhcp_leases\n'
+  for leases_file in \
+    /tmp/dhcp.leases \
+    /var/lib/misc/dnsmasq.leases \
+    /tmp/var/lib/misc/dnsmasq.leases \
+    /var/lib/misc/dnsmasq/dnsmasq.leases \
+    /tmp/dnsmasq.leases
+  do
+    if [ -s "$leases_file" ]; then
+      cat "$leases_file" 2>/dev/null || true
+      break
+    fi
+  done
+  printf '\n__ASUS_EXPORTER_END__ dhcp_leases\n'
+}
+
 emit_section proc_net_dev cat /proc/net/dev
 emit_section proc_net_snmp cat /proc/net/snmp
 emit_section proc_net_netstat cat /proc/net/netstat
@@ -47,7 +64,7 @@ emit_section proc_loadavg cat /proc/loadavg
 emit_section proc_meminfo cat /proc/meminfo
 emit_conntrack_file conntrack_count /proc/sys/net/netfilter/nf_conntrack_count /proc/sys/net/ipv4/netfilter/ip_conntrack_count
 emit_conntrack_file conntrack_max /proc/sys/net/netfilter/nf_conntrack_max /proc/sys/net/ipv4/netfilter/ip_conntrack_max
-emit_section dhcp_leases cat /tmp/dhcp.leases
+emit_dhcp_leases
 """
 
 
