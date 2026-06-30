@@ -1238,6 +1238,234 @@
       ],
       "title": "Interface Throughput (Mbps)",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "qgXJ0MD4k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 2,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "download.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#00cc00"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 84
+      },
+      "id": 12,
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "increase(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[1d])",
+          "legendFormat": "download last 24h",
+          "refId": "A"
+        },
+        {
+          "expr": "increase(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[7d])",
+          "legendFormat": "download last 7d",
+          "refId": "B"
+        },
+        {
+          "expr": "increase(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[30d])",
+          "legendFormat": "download last 30d",
+          "refId": "C"
+        },
+        {
+          "expr": "asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}",
+          "legendFormat": "download since reboot",
+          "refId": "D"
+        }
+      ],
+      "title": "WAN Download Totals",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "qgXJ0MD4k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 2,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "upload.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#0000ff"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 94
+      },
+      "id": 13,
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "increase(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[1d])",
+          "legendFormat": "upload last 24h",
+          "refId": "A"
+        },
+        {
+          "expr": "increase(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[7d])",
+          "legendFormat": "upload last 7d",
+          "refId": "B"
+        },
+        {
+          "expr": "increase(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[30d])",
+          "legendFormat": "upload last 30d",
+          "refId": "C"
+        },
+        {
+          "expr": "asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}",
+          "legendFormat": "upload since reboot",
+          "refId": "D"
+        }
+      ],
+      "title": "WAN Upload Totals",
+      "type": "timeseries"
     }
   ],
   "refresh": "1m",
@@ -1283,6 +1511,6 @@
   "timezone": "browser",
   "title": "ASUS GT-AXE16000",
   "uid": "asus-gt-axe16000",
-  "version": 7,
+  "version": 8,
   "weekStart": ""
 }

@@ -110,6 +110,14 @@ increase(asus_netdev_receive_bytes_total{router="gt_axe16000",interface="eth0"}[
 asus_conntrack_entries{router="gt_axe16000"} / asus_conntrack_entries_max{router="gt_axe16000"} * 100
 rate(asus_snmp_tcp_retrans_segs_total{router="gt_axe16000"}[3m])
 asus_static_ip_assignments_active{router="gt_axe16000"}
+increase(asus_netdev_receive_bytes_total{router="gt_axe16000",role="wan"}[1d])
+increase(asus_netdev_receive_bytes_total{router="gt_axe16000",role="wan"}[7d])
+increase(asus_netdev_receive_bytes_total{router="gt_axe16000",role="wan"}[30d])
+asus_netdev_receive_bytes_total{router="gt_axe16000",role="wan"}
+increase(asus_netdev_transmit_bytes_total{router="gt_axe16000",role="wan"}[1d])
+increase(asus_netdev_transmit_bytes_total{router="gt_axe16000",role="wan"}[7d])
+increase(asus_netdev_transmit_bytes_total{router="gt_axe16000",role="wan"}[30d])
+asus_netdev_transmit_bytes_total{router="gt_axe16000",role="wan"}
 sum by (ip_stack, protocol, state) (asus_conntrack_flows{router="gt_axe16000"})
 irate(asus_ip_stack_receive_octets_total{router="gt_axe16000"}[3m]) * 8
 irate(asus_transport_receive_packets_total{router="gt_axe16000"}[3m])
@@ -123,6 +131,12 @@ need at least two samples in the lookback range, so a 1-minute `rate()` window
 will often graph no data. Use a 3-minute lookback for live panels; `irate()`
 still reports the newest scrape-to-scrape delta while leaving enough room for
 normal scrape jitter.
+
+WAN byte totals use the `/proc/net/dev` counters. `increase(...[1d])`,
+`increase(...[7d])`, and `increase(...[30d])` provide rolling daily, weekly,
+and 30-day totals. The raw WAN byte counter is effectively "since interface
+counter reset," which normally corresponds to router/interface reboot. Longer
+windows require enough Prometheus retention and scrape history.
 
 Read-only TCP/UDP byte throughput is not generally available from stock router
 kernel counters. The exporter therefore exposes byte throughput by interface
