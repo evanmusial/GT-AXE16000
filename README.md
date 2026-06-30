@@ -97,13 +97,19 @@ router to see it.
 Useful PromQL examples:
 
 ```promql
-rate(asus_netdev_receive_bytes_total{router="gt_axe16000",interface="eth0"}[5m]) * 8
-rate(asus_netdev_transmit_bytes_total{router="gt_axe16000",interface="eth0"}[5m]) * 8
+irate(asus_netdev_receive_bytes_total{router="gt_axe16000",interface="eth0"}[3m]) * 8
+irate(asus_netdev_transmit_bytes_total{router="gt_axe16000",interface="eth0"}[3m]) * 8
 increase(asus_netdev_receive_bytes_total{router="gt_axe16000",interface="eth0"}[1d])
 asus_conntrack_entries{router="gt_axe16000"} / asus_conntrack_entries_max{router="gt_axe16000"} * 100
-rate(asus_snmp_tcp_retrans_segs_total{router="gt_axe16000"}[5m])
+rate(asus_snmp_tcp_retrans_segs_total{router="gt_axe16000"}[3m])
 asus_static_ip_assignments_active{router="gt_axe16000"}
 ```
+
+The exporter is normally scraped every 60 seconds. Prometheus counter functions
+need at least two samples in the lookback range, so a 1-minute `rate()` window
+will often graph no data. Use a 3-minute lookback for live panels; `irate()`
+still reports the newest scrape-to-scrape delta while leaving enough room for
+normal scrape jitter.
 
 ## Prometheus and Grafana
 

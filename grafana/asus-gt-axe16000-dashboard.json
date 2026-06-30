@@ -114,12 +114,12 @@
       },
       "targets": [
         {
-          "expr": "rate(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[5m]) * 8 / 1000000",
+          "expr": "irate(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[3m]) * 8 / 1000000",
           "legendFormat": "download Mbps",
           "refId": "A"
         },
         {
-          "expr": "rate(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[5m]) * 8 / 1000000",
+          "expr": "irate(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[3m]) * 8 / 1000000",
           "legendFormat": "upload Mbps",
           "refId": "B"
         }
@@ -233,12 +233,12 @@
       },
       "targets": [
         {
-          "expr": "rate(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[5m]) / 1024 / 1024",
+          "expr": "irate(asus_netdev_receive_bytes_total{router=\"$router\",role=\"wan\"}[3m]) / 1024 / 1024",
           "legendFormat": "download MiB/s",
           "refId": "A"
         },
         {
-          "expr": "rate(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[5m]) / 1024 / 1024",
+          "expr": "irate(asus_netdev_transmit_bytes_total{router=\"$router\",role=\"wan\"}[3m]) / 1024 / 1024",
           "legendFormat": "upload MiB/s",
           "refId": "B"
         }
@@ -352,12 +352,12 @@
       },
       "targets": [
         {
-          "expr": "rate(asus_netdev_receive_packets_total{router=\"$router\",role=\"wan\"}[5m])",
+          "expr": "irate(asus_netdev_receive_packets_total{router=\"$router\",role=\"wan\"}[3m])",
           "legendFormat": "RX packets/s",
           "refId": "A"
         },
         {
-          "expr": "rate(asus_netdev_transmit_packets_total{router=\"$router\",role=\"wan\"}[5m])",
+          "expr": "irate(asus_netdev_transmit_packets_total{router=\"$router\",role=\"wan\"}[3m])",
           "legendFormat": "TX packets/s",
           "refId": "B"
         }
@@ -440,22 +440,22 @@
       },
       "targets": [
         {
-          "expr": "rate(asus_netdev_receive_errs_total{router=\"$router\",role=\"wan\"}[5m])",
+          "expr": "rate(asus_netdev_receive_errs_total{router=\"$router\",role=\"wan\"}[3m])",
           "legendFormat": "RX errors/s",
           "refId": "A"
         },
         {
-          "expr": "rate(asus_netdev_transmit_errs_total{router=\"$router\",role=\"wan\"}[5m])",
+          "expr": "rate(asus_netdev_transmit_errs_total{router=\"$router\",role=\"wan\"}[3m])",
           "legendFormat": "TX errors/s",
           "refId": "B"
         },
         {
-          "expr": "rate(asus_netdev_receive_drop_total{router=\"$router\",role=\"wan\"}[5m])",
+          "expr": "rate(asus_netdev_receive_drop_total{router=\"$router\",role=\"wan\"}[3m])",
           "legendFormat": "RX drops/s",
           "refId": "C"
         },
         {
-          "expr": "rate(asus_netdev_transmit_drop_total{router=\"$router\",role=\"wan\"}[5m])",
+          "expr": "rate(asus_netdev_transmit_drop_total{router=\"$router\",role=\"wan\"}[3m])",
           "legendFormat": "TX drops/s",
           "refId": "D"
         }
@@ -538,17 +538,17 @@
       },
       "targets": [
         {
-          "expr": "rate(asus_snmp_tcp_retrans_segs_total{router=\"$router\"}[5m])",
+          "expr": "rate(asus_snmp_tcp_retrans_segs_total{router=\"$router\"}[3m])",
           "legendFormat": "retransmits/s",
           "refId": "A"
         },
         {
-          "expr": "rate(asus_snmp_tcp_attempt_fails_total{router=\"$router\"}[5m])",
+          "expr": "rate(asus_snmp_tcp_attempt_fails_total{router=\"$router\"}[3m])",
           "legendFormat": "attempt fails/s",
           "refId": "B"
         },
         {
-          "expr": "rate(asus_snmp_tcp_estab_resets_total{router=\"$router\"}[5m])",
+          "expr": "rate(asus_snmp_tcp_estab_resets_total{router=\"$router\"}[3m])",
           "legendFormat": "established resets/s",
           "refId": "C"
         }
@@ -693,6 +693,6 @@
   "timezone": "browser",
   "title": "ASUS GT-AXE16000",
   "uid": "asus-gt-axe16000",
-  "version": 5,
+  "version": 6,
   "weekStart": ""
 }
