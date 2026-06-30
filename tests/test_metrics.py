@@ -1,7 +1,13 @@
+from collections import Counter
 import unittest
 
 from asus_exporter.config import ExporterConfig
-from asus_exporter.metrics import build_router_samples, render_prometheus, Sample
+from asus_exporter.metrics import (
+    build_fcache_wan_samples,
+    build_router_samples,
+    render_prometheus,
+    Sample,
+)
 
 
 class MetricTests(unittest.TestCase):
@@ -110,6 +116,36 @@ class MetricTests(unittest.TestCase):
         self.assertIn("# HELP test_metric line one\\nline two", output)
         self.assertIn('quoted="a\\"b"', output)
         self.assertIn('slash="a\\\\b"', output)
+
+    def test_build_fcache_wan_samples(self):
+        output = render_prometheus(
+            build_fcache_wan_samples(
+                ExporterConfig(),
+                Counter(
+                    {
+                        ("receive", "ipv4"): 100,
+                        ("receive", "ipv6"): 200,
+                        ("transmit", "ipv4"): 300,
+                    }
+                ),
+            )
+        )
+        self.assertIn(
+            'asus_fcache_wan_receive_bytes_total{ip_stack="ipv4",router="gt_axe16000"} 100',
+            output,
+        )
+        self.assertIn(
+            'asus_fcache_wan_receive_bytes_total{ip_stack="ipv6",router="gt_axe16000"} 200',
+            output,
+        )
+        self.assertIn(
+            'asus_fcache_wan_transmit_bytes_total{ip_stack="ipv4",router="gt_axe16000"} 300',
+            output,
+        )
+        self.assertIn(
+            'asus_fcache_wan_transmit_bytes_total{ip_stack="ipv6",router="gt_axe16000"} 0',
+            output,
+        )
 
 
 if __name__ == "__main__":

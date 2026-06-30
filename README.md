@@ -92,6 +92,8 @@ The initial exporter covers:
 - Protocol counters from `/proc/net/snmp`, `/proc/net/netstat`, and
   `/proc/net/snmp6`.
 - Normalized IPv4/IPv6 IP-layer octet counters where exposed by the router.
+- Best-effort WAN byte attribution by IPv4/IPv6 stack from Broadcom flow-cache
+  active-flow deltas.
 - Normalized transport packet counters for TCP segments and UDP datagrams
   where exposed by the router.
 - Exporter self-metrics for scrape success, duration, last success timestamp,
@@ -120,6 +122,8 @@ increase(asus_netdev_transmit_bytes_total{router="gt_axe16000",role="wan"}[30d])
 asus_netdev_transmit_bytes_total{router="gt_axe16000",role="wan"}
 sum by (ip_stack, protocol, state) (asus_conntrack_flows{router="gt_axe16000"})
 irate(asus_ip_stack_receive_octets_total{router="gt_axe16000"}[3m]) * 8
+sum by (ip_stack) (irate(asus_fcache_wan_receive_bytes_total{router="gt_axe16000"}[3m])) * 8
+sum by (ip_stack) (irate(asus_fcache_wan_transmit_bytes_total{router="gt_axe16000"}[3m])) * 8
 irate(asus_transport_receive_packets_total{router="gt_axe16000"}[3m])
 (irate(asus_netdev_receive_bytes_total{router="gt_axe16000"}[3m]) * 8)
   * on(router, interface) group_left(ssid, prefix, bridge)
@@ -137,6 +141,15 @@ WAN byte totals use the `/proc/net/dev` counters. `increase(...[1d])`,
 and 30-day totals. The raw WAN byte counter is effectively "since interface
 counter reset," which normally corresponds to router/interface reboot. Longer
 windows require enough Prometheus retention and scrape history.
+
+The normalized `asus_ip_stack_*` counters come from router kernel IP-layer
+tables. They do not necessarily add up to WAN interface throughput on this
+Broadcom platform because hardware acceleration can update interface counters
+while bypassing the normal Linux IP accounting path. Use
+`asus_netdev_*{role="wan"}` for authoritative WAN totals, and use
+`asus_fcache_wan_*` when you want the best read-only IPv4/IPv6 attribution from
+the active flow cache. Flow-cache attribution starts at exporter start and may
+miss short flows that begin and end between scrapes.
 
 Read-only TCP/UDP byte throughput is not generally available from stock router
 kernel counters. The exporter therefore exposes byte throughput by interface

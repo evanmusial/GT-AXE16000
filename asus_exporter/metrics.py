@@ -308,6 +308,29 @@ def build_exporter_samples(
     ]
 
 
+def build_fcache_wan_samples(
+    config: ExporterConfig,
+    counters: Counter[tuple[str, str]],
+) -> list[Sample]:
+    builder = MetricBuilder()
+    base_labels = {"router": config.router_label}
+    help_text = (
+        "Best-effort WAN bytes attributed from Broadcom flow-cache active-flow "
+        "deltas by IP stack. Starts at exporter start and may miss flows that "
+        "begin and end between scrapes."
+    )
+    for direction in ("receive", "transmit"):
+        for ip_stack in ("ipv4", "ipv6"):
+            builder.add(
+                f"asus_fcache_wan_{direction}_bytes_total",
+                counters[(direction, ip_stack)],
+                labels={**base_labels, "ip_stack": ip_stack},
+                metric_type="counter",
+                help_text=help_text,
+            )
+    return builder.samples
+
+
 def _add_protocol_samples(
     builder: MetricBuilder,
     text: str,

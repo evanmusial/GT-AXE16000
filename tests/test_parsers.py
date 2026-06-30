@@ -4,6 +4,7 @@ from asus_exporter.parsers import (
     parse_conntrack_summary,
     parse_dhcp_leases,
     parse_arp_table,
+    parse_fcache_nflist,
     parse_loadavg,
     parse_meminfo,
     parse_net_dev,
@@ -119,6 +120,25 @@ Address                  HWtype  HWaddress           Flags Mask            Iface
         self.assertEqual(len(networks), 2)
         self.assertEqual(networks[0].ssid, "Home WiFi")
         self.assertEqual(networks[1].bridge, "br52")
+
+    def test_parse_fcache_nflist(self):
+        flows = parse_fcache_nflist(
+            """
+Broadcom Packet Flow Cache v4.0
+Flow   U/M M/C idle:+swhit SW_TotHits:          TotalBytes HW_tpl Fhw_idx HW_Hits   HW_TotHits L1-Info Prot   SourceIpAddress:Port    DestinIpAddress:Port   Vlan0(mcast) Vlan1(mcast) tag# ToS IqPrio SkbMark    TCP_PURE_ACK LLC    RxDev    TxDev nf_conn[0] nf_conn[1] nf_conn[2] nf_conn[3]
+    17   U   -    0:     0          1:                 102 0x0010017c 000380        966        966  EPHY   5   17 <2607:f8b0:4024:0c0d:0000:0000:0000:0064:443><2600:1702:7df0:a9bf:6480:31ee:24c7:d7ba:53135>   0x0000ffff   0x0000ffff    0  00      0 0x08000000    0   0     eth0     eth5 ffffffc03858e180 0000000000000000 0000000000000000 0000000000000000
+    23   U   -   74:     0          1:                 201 0x001000fe 000254       2967       2967  WPHY   0    6  <010.001.010.146:53436> <216.239.038.027:11095>   0x0000ffff   0x0000ffff    0  00      0 0x00000000    0   0     eth7     eth0 ffffffc0398ff980 0000000000000000 0000000000000000 0000000000000000
+"""
+        )
+        self.assertEqual(len(flows), 2)
+        self.assertEqual(flows[0].ip_stack, "ipv6")
+        self.assertEqual(flows[0].rx_dev, "eth0")
+        self.assertEqual(flows[0].tx_dev, "eth5")
+        self.assertEqual(flows[0].total_bytes, 102)
+        self.assertEqual(flows[1].ip_stack, "ipv4")
+        self.assertEqual(flows[1].rx_dev, "eth7")
+        self.assertEqual(flows[1].tx_dev, "eth0")
+        self.assertEqual(flows[1].total_bytes, 201)
 
     def test_parse_sections(self):
         sections = parse_sections(

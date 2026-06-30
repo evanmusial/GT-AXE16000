@@ -67,10 +67,20 @@ class WifiNetwork:
     bridge: str
 
 
+@dataclass(frozen=True)
+class FcacheFlow:
+    flow_key: str
+    ip_stack: str
+    rx_dev: str
+    tx_dev: str
+    total_bytes: int
+
+
 BEGIN_RE = re.compile(r"^__ASUS_EXPORTER_BEGIN__\s+([A-Za-z0-9_.:-]+)\s*$")
 END_RE = re.compile(r"^__ASUS_EXPORTER_END__\s+([A-Za-z0-9_.:-]+)\s*$")
 IPV4_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 MAC_RE = re.compile(r"^[0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5}$")
+FCACHE_TUPLE_RE = re.compile(r"<([^>]*)>")
 BUSYBOX_ARP_RE = re.compile(
     r"\((?P<ip>\d{1,3}(?:\.\d{1,3}){3})\)\s+at\s+"
     r"(?P<mac>[0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5})\s+.*\s+on\s+(?P<iface>\S+)"
@@ -361,6 +371,51 @@ def parse_wifi_networks(text: str) -> list[WifiNetwork]:
             )
         )
     return networks
+
+
+def parse_fcache_nflist(text: str) -> list[FcacheFlow]:
+    flows: list[FcacheFlow] = []
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("id ") or line.startswith("--------"):
+            continue
+
+        parts = line.split()
+        if len(parts) < 12:
+            continue
+        try:
+            int(parts[0])
+            total_bytes = int(parts[6])
+        except ValueError:
+            continue
+
+        tuple_parts = FCACHE_TUPLE_RE.findall(line)
+        ip_stack = _fcache_ip_stack(tuple_parts)
+        if ip_stack is None:
+            continue
+
+        rx_dev = parts[-6]
+        tx_dev = parts[-5]
+        flow_key = "|".join((parts[0], ip_stack, rx_dev, tx_dev, *tuple_parts[:2]))
+        flows.append(
+            FcacheFlow(
+                flow_key=flow_key,
+                ip_stack=ip_stack,
+                rx_dev=rx_dev,
+                tx_dev=tx_dev,
+                total_bytes=total_bytes,
+            )
+        )
+    return flows
+
+
+def _fcache_ip_stack(tuple_parts: list[str]) -> str | None:
+    for tuple_part in tuple_parts[:2]:
+        if "." in tuple_part:
+            return "ipv4"
+        if ":" in tuple_part:
+            return "ipv6"
+    return None
 
 
 _FIRST_CAP_RE = re.compile("(.)([A-Z][a-z]+)")

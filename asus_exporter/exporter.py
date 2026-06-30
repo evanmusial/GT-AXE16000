@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import threading
@@ -11,8 +12,13 @@ from urllib.parse import urlparse
 
 from . import __version__
 from .config import ExporterConfig
-from .metrics import build_exporter_samples, build_router_samples, render_prometheus
-from .parsers import parse_sections
+from .metrics import (
+    build_exporter_samples,
+    build_fcache_wan_samples,
+    build_router_samples,
+    render_prometheus,
+)
+from .parsers import FcacheFlow, parse_fcache_nflist, parse_sections
 from .router_ssh import RouterSSH, RouterSSHError
 
 
@@ -165,6 +171,7 @@ emit_conntrack_summary
 emit_dhcp_leases
 emit_section arp_table arp -n
 emit_wifi_networks
+emit_section fcache_nflist cat /proc/fcache/nflist
 """
 
 
@@ -179,6 +186,8 @@ class ExporterState:
         self.last_success_timestamp_seconds: float | None = None
         self.ssh_errors_total = 0
         self.cached_router_samples = []
+        self.fcache_previous: dict[str, FcacheFlow] = {}
+        self.fcache_wan_counters: Counter[tuple[str, str]] = Counter()
 
     def metrics_text(self, force: bool = False) -> str:
         with self.lock:
@@ -200,7 +209,11 @@ class ExporterState:
         try:
             raw_output = self.router.run_script(METRIC_SNAPSHOT_SCRIPT)
             sections = parse_sections(raw_output)
-            self.cached_router_samples = build_router_samples(sections, self.config)
+            self._update_fcache_wan_counters(sections)
+            self.cached_router_samples = [
+                *build_router_samples(sections, self.config),
+                *build_fcache_wan_samples(self.config, self.fcache_wan_counters),
+            ]
             self.last_scrape_success = True
             self.last_success_timestamp_seconds = time.time()
         except RouterSSHError:
@@ -208,6 +221,27 @@ class ExporterState:
             self.ssh_errors_total += 1
         finally:
             self.last_scrape_duration_seconds = time.monotonic() - started
+
+    def _update_fcache_wan_counters(self, sections: dict[str, str]) -> None:
+        wan_interface = self.config.wan_interface
+        if not wan_interface:
+            self.fcache_previous = {}
+            return
+
+        current: dict[str, FcacheFlow] = {}
+        for flow in parse_fcache_nflist(sections.get("fcache_nflist", "")):
+            if flow.rx_dev != wan_interface and flow.tx_dev != wan_interface:
+                continue
+            previous = self.fcache_previous.get(flow.flow_key)
+            if previous is not None and flow.total_bytes >= previous.total_bytes:
+                delta = flow.total_bytes - previous.total_bytes
+                if delta > 0:
+                    if flow.rx_dev == wan_interface:
+                        self.fcache_wan_counters[("receive", flow.ip_stack)] += delta
+                    if flow.tx_dev == wan_interface:
+                        self.fcache_wan_counters[("transmit", flow.ip_stack)] += delta
+            current[flow.flow_key] = flow
+        self.fcache_previous = current
 
 
 class MetricsHandler(BaseHTTPRequestHandler):

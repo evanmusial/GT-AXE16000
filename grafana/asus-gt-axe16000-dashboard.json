@@ -900,18 +900,139 @@
       },
       "targets": [
         {
-          "expr": "irate(asus_ip_stack_receive_octets_total{router=\"$router\"}[3m]) * 8 / 1000000",
+          "expr": "sum by (ip_stack) (irate(asus_fcache_wan_receive_bytes_total{router=\"$router\"}[3m])) * 8 / 1000000",
           "legendFormat": "{{ip_stack}} RX Mbps",
           "refId": "A"
         },
         {
-          "expr": "irate(asus_ip_stack_transmit_octets_total{router=\"$router\"}[3m]) * 8 / 1000000",
+          "expr": "sum by (ip_stack) (irate(asus_fcache_wan_transmit_bytes_total{router=\"$router\"}[3m])) * 8 / 1000000",
           "legendFormat": "{{ip_stack}} TX Mbps",
           "refId": "B"
         }
       ],
-      "title": "IP Stack Throughput (Mbps)",
-      "type": "timeseries"
+      "title": "WAN IPv4/IPv6 Attribution (Mbps)",
+      "type": "timeseries",
+      "description": "Best-effort IPv4/IPv6 WAN attribution from Broadcom flow-cache active-flow deltas. Use WAN Throughput panels for authoritative interface totals."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "qgXJ0MD4k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "binBps",
+          "decimals": 2,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "lineWidth": 2,
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "pointSize": 5,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".* RX MiB/s"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#00cc00"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".* TX MiB/s"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#0000ff"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
+      "id": 14,
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (ip_stack) (irate(asus_fcache_wan_receive_bytes_total{router=\"$router\"}[3m])) / 1024 / 1024",
+          "legendFormat": "{{ip_stack}} RX MiB/s",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (ip_stack) (irate(asus_fcache_wan_transmit_bytes_total{router=\"$router\"}[3m])) / 1024 / 1024",
+          "legendFormat": "{{ip_stack}} TX MiB/s",
+          "refId": "B"
+        }
+      ],
+      "title": "WAN IPv4/IPv6 Attribution (MiB/s)",
+      "type": "timeseries",
+      "description": "Best-effort IPv4/IPv6 WAN attribution from Broadcom flow-cache active-flow deltas. Use WAN Throughput panels for authoritative interface totals."
     },
     {
       "datasource": {
@@ -968,7 +1089,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 56
+        "y": 66
       },
       "id": 9,
       "options": {
@@ -1087,7 +1208,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 64
+        "y": 74
       },
       "id": 10,
       "options": {
@@ -1206,7 +1327,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 74
+        "y": 84
       },
       "id": 11,
       "options": {
@@ -1310,7 +1431,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 84
+        "y": 94
       },
       "id": 12,
       "options": {
@@ -1424,7 +1545,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 94
+        "y": 104
       },
       "id": 13,
       "options": {
@@ -1511,6 +1632,6 @@
   "timezone": "browser",
   "title": "ASUS GT-AXE16000",
   "uid": "asus-gt-axe16000",
-  "version": 8,
+  "version": 9,
   "weekStart": ""
 }
