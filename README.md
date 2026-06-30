@@ -83,10 +83,17 @@ The initial exporter covers:
 - Router uptime and load.
 - Memory totals/free/available/buffers/cache.
 - Conntrack current/max entries.
+- Conntrack flow counts by IP stack, protocol, TCP state, and conntrack status.
 - DHCP lease count and lease metadata.
 - Active static-IP clients inferred from ARP entries on non-WAN interfaces
   whose IPs are not present in current DHCP leases.
-- Protocol counters from `/proc/net/snmp` and `/proc/net/netstat`.
+- Wi-Fi network metadata from `nvram`, including interface, SSID, bridge,
+  enabled/broadcast state, and whether the interface exists.
+- Protocol counters from `/proc/net/snmp`, `/proc/net/netstat`, and
+  `/proc/net/snmp6`.
+- Normalized IPv4/IPv6 IP-layer octet counters where exposed by the router.
+- Normalized transport packet counters for TCP segments and UDP datagrams
+  where exposed by the router.
 - Exporter self-metrics for scrape success, duration, last success timestamp,
   and SSH error count.
 
@@ -103,6 +110,12 @@ increase(asus_netdev_receive_bytes_total{router="gt_axe16000",interface="eth0"}[
 asus_conntrack_entries{router="gt_axe16000"} / asus_conntrack_entries_max{router="gt_axe16000"} * 100
 rate(asus_snmp_tcp_retrans_segs_total{router="gt_axe16000"}[3m])
 asus_static_ip_assignments_active{router="gt_axe16000"}
+sum by (ip_stack, protocol, state) (asus_conntrack_flows{router="gt_axe16000"})
+irate(asus_ip_stack_receive_octets_total{router="gt_axe16000"}[3m]) * 8
+irate(asus_transport_receive_packets_total{router="gt_axe16000"}[3m])
+(irate(asus_netdev_receive_bytes_total{router="gt_axe16000"}[3m]) * 8)
+  * on(router, interface) group_left(ssid, prefix, bridge)
+    asus_wifi_network_info{router="gt_axe16000",enabled="1",present="1"}
 ```
 
 The exporter is normally scraped every 60 seconds. Prometheus counter functions
@@ -110,6 +123,13 @@ need at least two samples in the lookback range, so a 1-minute `rate()` window
 will often graph no data. Use a 3-minute lookback for live panels; `irate()`
 still reports the newest scrape-to-scrape delta while leaving enough room for
 normal scrape jitter.
+
+Read-only TCP/UDP byte throughput is not generally available from stock router
+kernel counters. The exporter therefore exposes byte throughput by interface
+and by IP stack, plus TCP segment and UDP datagram rates by protocol where the
+router exposes those counters. True byte accounting by TCP/UDP port or protocol
+would require router-side firewall/accounting rules and can be distorted by
+hardware acceleration.
 
 ## Prometheus and Grafana
 

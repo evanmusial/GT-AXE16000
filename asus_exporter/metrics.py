@@ -13,12 +13,15 @@ from .parsers import (
     ArpEntry,
     parse_dhcp_leases,
     parse_arp_table,
+    parse_conntrack_summary,
     parse_int,
     parse_loadavg,
     parse_meminfo,
     parse_net_dev,
     parse_protocol_table,
+    parse_snmp6,
     parse_uptime,
+    parse_wifi_networks,
     snake_case,
 )
 
@@ -148,6 +151,19 @@ def build_router_samples(sections: dict[str, str], config: ExporterConfig) -> li
         labels=base_labels,
         help_text="Maximum conntrack entry count.",
     )
+    for flow_count in parse_conntrack_summary(sections.get("conntrack_summary", "")):
+        builder.add(
+            "asus_conntrack_flows",
+            flow_count.count,
+            labels={
+                **base_labels,
+                "ip_stack": flow_count.ip_stack,
+                "protocol": flow_count.protocol,
+                "state": flow_count.state,
+                "status": flow_count.status,
+            },
+            help_text="Current conntrack flow count by IP stack, protocol, state, and status.",
+        )
 
     leases = parse_dhcp_leases(sections.get("dhcp_leases", ""))
     lease_ips = {lease.ip for lease in leases}
@@ -197,6 +213,38 @@ def build_router_samples(sections: dict[str, str], config: ExporterConfig) -> li
             help_text="Active inferred non-DHCP clients by router interface.",
         )
 
+    for network in parse_wifi_networks(sections.get("wifi_networks", "")):
+        labels = {
+            **base_labels,
+            "prefix": network.prefix,
+            "interface": network.interface,
+            "ssid": network.ssid,
+            "bridge": network.bridge,
+            "bss_enabled": _bool_label(network.bss_enabled),
+            "radio_enabled": _bool_label(network.radio_enabled),
+            "broadcast": _bool_label("0" if network.closed == "1" else "1"),
+            "present": _bool_label(network.present),
+        }
+        labels["enabled"] = _bool_label(
+            "1"
+            if labels["bss_enabled"] == "1"
+            and labels["radio_enabled"] == "1"
+            and labels["present"] == "1"
+            and network.ssid
+            else "0"
+        )
+        builder.add(
+            "asus_wifi_network_info",
+            1,
+            labels=labels,
+            help_text="Wi-Fi network metadata from router nvram. Value is always 1.",
+        )
+
+    snmp_rows = parse_protocol_table(sections.get("proc_net_snmp", ""))
+    netstat_rows = parse_protocol_table(sections.get("proc_net_netstat", ""))
+    snmp6_rows = parse_snmp6(sections.get("proc_net_snmp6", ""))
+    _add_ip_stack_octet_samples(builder, netstat_rows, snmp6_rows, base_labels)
+    _add_transport_packet_samples(builder, snmp_rows, snmp6_rows, base_labels)
     _add_protocol_samples(
         builder,
         sections.get("proc_net_snmp", ""),
@@ -211,6 +259,7 @@ def build_router_samples(sections: dict[str, str], config: ExporterConfig) -> li
         prefix="asus_netstat",
         help_source="/proc/net/netstat",
     )
+    _add_snmp6_samples(builder, snmp6_rows, base_labels)
 
     return builder.samples
 
@@ -278,6 +327,74 @@ def _add_protocol_samples(
             metric_type="gauge" if is_gauge else "counter",
             help_text=f"Router {help_source} {family} {field}.",
         )
+
+
+def _add_snmp6_samples(
+    builder: MetricBuilder,
+    rows: dict[str, int],
+    base_labels: dict[str, str],
+) -> None:
+    for field, value in rows.items():
+        builder.add(
+            f"asus_snmp6_{snake_case(field)}_total",
+            value,
+            labels=base_labels,
+            metric_type="counter",
+            help_text=f"Router /proc/net/snmp6 {field}.",
+        )
+
+
+def _add_ip_stack_octet_samples(
+    builder: MetricBuilder,
+    netstat_rows: dict[tuple[str, str], int],
+    snmp6_rows: dict[str, int],
+    base_labels: dict[str, str],
+) -> None:
+    samples = (
+        ("receive", "ipv4", netstat_rows.get(("IpExt", "InOctets"))),
+        ("transmit", "ipv4", netstat_rows.get(("IpExt", "OutOctets"))),
+        ("receive", "ipv6", snmp6_rows.get("Ip6InOctets")),
+        ("transmit", "ipv6", snmp6_rows.get("Ip6OutOctets")),
+    )
+    for direction, ip_stack, value in samples:
+        builder.add(
+            f"asus_ip_stack_{direction}_octets_total",
+            value,
+            labels={**base_labels, "ip_stack": ip_stack},
+            metric_type="counter",
+            help_text="IP-layer octet counter by stack where the router exposes it.",
+        )
+
+
+def _add_transport_packet_samples(
+    builder: MetricBuilder,
+    snmp_rows: dict[tuple[str, str], int],
+    snmp6_rows: dict[str, int],
+    base_labels: dict[str, str],
+) -> None:
+    samples = (
+        ("receive", "ipv4", "tcp", snmp_rows.get(("Tcp", "InSegs"))),
+        ("transmit", "ipv4", "tcp", snmp_rows.get(("Tcp", "OutSegs"))),
+        ("receive", "ipv4", "udp", snmp_rows.get(("Udp", "InDatagrams"))),
+        ("transmit", "ipv4", "udp", snmp_rows.get(("Udp", "OutDatagrams"))),
+        ("receive", "ipv6", "udp", snmp6_rows.get("Udp6InDatagrams")),
+        ("transmit", "ipv6", "udp", snmp6_rows.get("Udp6OutDatagrams")),
+    )
+    for direction, ip_stack, protocol, value in samples:
+        builder.add(
+            f"asus_transport_{direction}_packets_total",
+            value,
+            labels={**base_labels, "ip_stack": ip_stack, "protocol": protocol},
+            metric_type="counter",
+            help_text=(
+                "Transport-layer packet counter by IP stack where the router "
+                "exposes it. TCP values are segments; UDP values are datagrams."
+            ),
+        )
+
+
+def _bool_label(value: str) -> str:
+    return "1" if value == "1" else "0"
 
 
 def render_prometheus(samples: Iterable[Sample]) -> str:

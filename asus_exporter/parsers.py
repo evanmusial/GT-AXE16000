@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 import re
 
@@ -43,6 +44,27 @@ class ArpEntry:
     mac: str
     interface: str
     flags: str
+
+
+@dataclass(frozen=True)
+class ConntrackFlowCount:
+    ip_stack: str
+    protocol: str
+    state: str
+    status: str
+    count: int
+
+
+@dataclass(frozen=True)
+class WifiNetwork:
+    prefix: str
+    interface: str
+    ssid: str
+    bss_enabled: str
+    radio_enabled: str
+    closed: str
+    present: str
+    bridge: str
 
 
 BEGIN_RE = re.compile(r"^__ASUS_EXPORTER_BEGIN__\s+([A-Za-z0-9_.:-]+)\s*$")
@@ -121,6 +143,19 @@ def parse_protocol_table(text: str) -> dict[tuple[str, str], int]:
                 rows[(header_family, field)] = int(value)
             except ValueError:
                 continue
+    return rows
+
+
+def parse_snmp6(text: str) -> dict[str, int]:
+    rows: dict[str, int] = {}
+    for raw_line in text.splitlines():
+        parts = raw_line.split()
+        if len(parts) != 2:
+            continue
+        try:
+            rows[parts[0]] = int(parts[1])
+        except ValueError:
+            continue
     return rows
 
 
@@ -224,6 +259,108 @@ def parse_arp_table(text: str) -> list[ArpEntry]:
 
         entries.append(ArpEntry(ip=parts[0], mac=mac, interface=interface, flags=flags))
     return entries
+
+
+def parse_conntrack_summary(text: str) -> list[ConntrackFlowCount]:
+    counts: Counter[tuple[str, str, str, str]] = Counter()
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        summary = _parse_conntrack_summary_line(line)
+        if summary is not None:
+            key, count = summary
+            counts[key] += count
+            continue
+
+        raw_key = _parse_conntrack_raw_line(line)
+        if raw_key is not None:
+            counts[raw_key] += 1
+
+    return [
+        ConntrackFlowCount(
+            ip_stack=ip_stack,
+            protocol=protocol,
+            state=state,
+            status=status,
+            count=count,
+        )
+        for (ip_stack, protocol, state, status), count in sorted(counts.items())
+    ]
+
+
+def _parse_conntrack_summary_line(line: str) -> tuple[tuple[str, str, str, str], int] | None:
+    parts = line.split("\t")
+    if len(parts) != 5:
+        return None
+    try:
+        count = int(parts[4])
+    except ValueError:
+        return None
+    return (
+        (
+            _conntrack_label(parts[0]),
+            _conntrack_label(parts[1]),
+            _conntrack_label(parts[2] or "none"),
+            _conntrack_label(parts[3] or "none"),
+        ),
+        count,
+    )
+
+
+def _parse_conntrack_raw_line(line: str) -> tuple[str, str, str, str] | None:
+    parts = line.split()
+    if len(parts) < 3:
+        return None
+
+    ip_stack = _conntrack_label(parts[0])
+    protocol = _conntrack_label(parts[2])
+    state = "none"
+    status = "none"
+
+    if protocol == "tcp" and len(parts) > 5:
+        candidate = parts[5]
+        if "=" not in candidate and not candidate.startswith("["):
+            state = _conntrack_label(candidate)
+
+    for part in parts:
+        token = part.strip("[]")
+        normalized = _conntrack_label(token)
+        if normalized in {"assured", "unreplied", "expected", "seen_reply", "confirmed"}:
+            status = normalized
+            break
+
+    return ip_stack, protocol, state, status
+
+
+def _conntrack_label(value: str) -> str:
+    normalized = snake_case(value)
+    return normalized or "unknown"
+
+
+def parse_wifi_networks(text: str) -> list[WifiNetwork]:
+    networks: list[WifiNetwork] = []
+    for raw_line in text.splitlines():
+        parts = raw_line.split("\t")
+        if len(parts) != 8:
+            continue
+        prefix, interface, ssid, bss_enabled, radio_enabled, closed, present, bridge = parts
+        if not prefix:
+            continue
+        networks.append(
+            WifiNetwork(
+                prefix=prefix,
+                interface=interface,
+                ssid=ssid,
+                bss_enabled=bss_enabled,
+                radio_enabled=radio_enabled,
+                closed=closed,
+                present=present,
+                bridge=bridge,
+            )
+        )
+    return networks
 
 
 _FIRST_CAP_RE = re.compile("(.)([A-Z][a-z]+)")

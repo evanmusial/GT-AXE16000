@@ -28,6 +28,7 @@ run_section brctl_show brctl show
 run_section proc_net_dev cat /proc/net/dev
 run_section proc_net_snmp cat /proc/net/snmp
 run_section proc_net_netstat cat /proc/net/netstat
+run_section proc_net_snmp6 cat /proc/net/snmp6
 run_section proc_uptime cat /proc/uptime
 run_section proc_loadavg cat /proc/loadavg
 run_section proc_meminfo cat /proc/meminfo

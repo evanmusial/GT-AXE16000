@@ -56,16 +56,115 @@ emit_dhcp_leases() {
   printf '\n__ASUS_EXPORTER_END__ dhcp_leases\n'
 }
 
+emit_conntrack_summary() {
+  printf '\n__ASUS_EXPORTER_BEGIN__ conntrack_summary\n'
+  conntrack_file=""
+  if [ -r /proc/net/nf_conntrack ]; then
+    conntrack_file=/proc/net/nf_conntrack
+  elif [ -r /proc/net/ip_conntrack ]; then
+    conntrack_file=/proc/net/ip_conntrack
+  fi
+  if [ -n "$conntrack_file" ]; then
+    awk '
+      {
+        stack = $1
+        proto = $3
+        state = "none"
+        status = "none"
+        if (proto == "tcp" && NF >= 6 && $6 !~ /=/ && $6 !~ /^\[/) {
+          state = $6
+        }
+        for (i = 1; i <= NF; i++) {
+          token = $i
+          gsub(/^\[/, "", token)
+          gsub(/\]$/, "", token)
+          if (token == "ASSURED") {
+            status = token
+            break
+          }
+          if (token == "UNREPLIED") {
+            status = token
+            break
+          }
+          if (token == "EXPECTED") {
+            status = token
+            break
+          }
+          if (token == "SEEN_REPLY") {
+            status = token
+            break
+          }
+          if (token == "CONFIRMED") {
+            status = token
+            break
+          }
+        }
+        counts[stack "\t" proto "\t" state "\t" status]++
+      }
+      END {
+        for (key in counts) {
+          print key "\t" counts[key]
+        }
+      }
+    ' "$conntrack_file" 2>/dev/null || true
+  fi
+  printf '\n__ASUS_EXPORTER_END__ conntrack_summary\n'
+}
+
+emit_wifi_networks() {
+  printf '\n__ASUS_EXPORTER_BEGIN__ wifi_networks\n'
+  for prefix in \
+    wl0 wl1 wl2 wl3 \
+    wl0.1 wl0.2 wl0.3 \
+    wl1.1 wl1.2 wl1.3 \
+    wl2.1 wl2.2 wl2.3 \
+    wl3.1 wl3.2 wl3.3
+  do
+    ifname=$(nvram get "${prefix}_ifname" 2>/dev/null)
+    ssid=$(nvram get "${prefix}_ssid" 2>/dev/null)
+    bss_enabled=$(nvram get "${prefix}_bss_enabled" 2>/dev/null)
+    radio_enabled=$(nvram get "${prefix}_radio" 2>/dev/null)
+    closed=$(nvram get "${prefix}_closed" 2>/dev/null)
+    if [ -z "$ifname$ssid$bss_enabled$radio_enabled$closed" ]; then
+      continue
+    fi
+
+    present=0
+    if [ -n "$ifname" ] && [ -d "/sys/class/net/$ifname" ]; then
+      present=1
+    fi
+
+    bridge=""
+    if [ -n "$ifname" ]; then
+      for bridge_path in /sys/class/net/br*/brif/"$ifname"; do
+        if [ -e "$bridge_path" ]; then
+          bridge=${bridge_path#/sys/class/net/}
+          bridge=${bridge%%/brif/*}
+          break
+        fi
+      done
+    fi
+
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+      "$prefix" "$ifname" "$ssid" "${bss_enabled:-0}" \
+      "${radio_enabled:-0}" "${closed:-0}" "$present" "$bridge"
+  done
+  printf '\n__ASUS_EXPORTER_END__ wifi_networks\n'
+}
+
 emit_section proc_net_dev cat /proc/net/dev
 emit_section proc_net_snmp cat /proc/net/snmp
 emit_section proc_net_netstat cat /proc/net/netstat
+emit_section proc_net_snmp6 cat /proc/net/snmp6
 emit_section proc_uptime cat /proc/uptime
 emit_section proc_loadavg cat /proc/loadavg
 emit_section proc_meminfo cat /proc/meminfo
 emit_conntrack_file conntrack_count /proc/sys/net/netfilter/nf_conntrack_count /proc/sys/net/ipv4/netfilter/ip_conntrack_count
 emit_conntrack_file conntrack_max /proc/sys/net/netfilter/nf_conntrack_max /proc/sys/net/ipv4/netfilter/ip_conntrack_max
+emit_conntrack_summary
 emit_dhcp_leases
 emit_section arp_table arp -n
+emit_wifi_networks
 """
 
 

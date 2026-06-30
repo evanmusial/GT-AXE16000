@@ -1,6 +1,7 @@
 import unittest
 
 from asus_exporter.parsers import (
+    parse_conntrack_summary,
     parse_dhcp_leases,
     parse_arp_table,
     parse_loadavg,
@@ -8,7 +9,9 @@ from asus_exporter.parsers import (
     parse_net_dev,
     parse_protocol_table,
     parse_sections,
+    parse_snmp6,
     parse_uptime,
+    parse_wifi_networks,
     snake_case,
 )
 
@@ -39,6 +42,17 @@ Udp: 100 2 3 90 4 5
         self.assertEqual(parsed[("Tcp", "CurrEstab")], 3)
         self.assertEqual(parsed[("Tcp", "RetransSegs")], 99)
         self.assertEqual(parsed[("Udp", "RcvbufErrors")], 4)
+
+    def test_parse_snmp6(self):
+        parsed = parse_snmp6(
+            """
+Ip6InOctets                     	23123514891
+Ip6OutOctets                    	13484283210
+Udp6InDatagrams                 	5099763
+"""
+        )
+        self.assertEqual(parsed["Ip6InOctets"], 23123514891)
+        self.assertEqual(parsed["Udp6InDatagrams"], 5099763)
 
     def test_parse_health(self):
         self.assertEqual(parse_uptime("123.45 999.00"), 123.45)
@@ -81,6 +95,30 @@ Address                  HWtype  HWaddress           Flags Mask            Iface
         self.assertEqual(entries[1].interface, "eth0")
         self.assertEqual(entries[2].ip, "10.1.10.60")
         self.assertEqual(entries[2].interface, "br0")
+
+    def test_parse_conntrack_summary(self):
+        entries = parse_conntrack_summary(
+            "ipv4\ttcp\tESTABLISHED\tASSURED\t12\n"
+            "ipv6\tudp\tnone\tnone\t3\n"
+            "ipv4     2 tcp      6 112 TIME_WAIT src=1.1.1.1 dst=2.2.2.2 "
+            "sport=123 dport=443 [ASSURED] use=2\n"
+        )
+        indexed = {
+            (entry.ip_stack, entry.protocol, entry.state, entry.status): entry.count
+            for entry in entries
+        }
+        self.assertEqual(indexed[("ipv4", "tcp", "established", "assured")], 12)
+        self.assertEqual(indexed[("ipv6", "udp", "none", "none")], 3)
+        self.assertEqual(indexed[("ipv4", "tcp", "time_wait", "assured")], 1)
+
+    def test_parse_wifi_networks(self):
+        networks = parse_wifi_networks(
+            "wl0\teth7\tHome WiFi\t1\t1\t0\t1\tbr0\n"
+            "wl3.1\twl3.1\tGuest\t1\t1\t0\t1\tbr52\n"
+        )
+        self.assertEqual(len(networks), 2)
+        self.assertEqual(networks[0].ssid, "Home WiFi")
+        self.assertEqual(networks[1].bridge, "br52")
 
     def test_parse_sections(self):
         sections = parse_sections(
