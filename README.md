@@ -92,8 +92,8 @@ The initial exporter covers:
 - Protocol counters from `/proc/net/snmp`, `/proc/net/netstat`, and
   `/proc/net/snmp6`.
 - Normalized IPv4/IPv6 IP-layer octet counters where exposed by the router.
-- Best-effort WAN byte attribution by IPv4/IPv6 stack from Broadcom flow-cache
-  active-flow deltas.
+- Best-effort WAN byte hints by IPv4/IPv6 stack from Broadcom flow-cache
+  active-flow deltas. These are diagnostic and are not additive WAN totals.
 - Normalized transport packet counters for TCP segments and UDP datagrams
   where exposed by the router.
 - Exporter self-metrics for scrape success, duration, last success timestamp,
@@ -146,10 +146,15 @@ The normalized `asus_ip_stack_*` counters come from router kernel IP-layer
 tables. They do not necessarily add up to WAN interface throughput on this
 Broadcom platform because hardware acceleration can update interface counters
 while bypassing the normal Linux IP accounting path. Use
-`asus_netdev_*{role="wan"}` for authoritative WAN totals, and use
-`asus_fcache_wan_*` when you want the best read-only IPv4/IPv6 attribution from
-the active flow cache. Flow-cache attribution starts at exporter start and may
-miss short flows that begin and end between scrapes.
+`asus_netdev_*{role="wan"}` for authoritative WAN totals. Use
+`asus_fcache_wan_*` only as a read-only diagnostic hint about active flow-cache
+stack mix. On observed GT-AXE16000 firmware, `/proc/fcache/nflist`
+`TotalBytes` undercounts hardware-hit byte volume, and Broadcom `fc flwstats`
+can count hardware bytes by stack but could not be safely filtered to `eth0`.
+That means an exact additive IPv4/IPv6 WAN split is not available from current
+read-only counters. Getting one would require changing router accounting, such
+as disabling acceleration for validation, adding firewall/accounting rules, or
+measuring at another choke point.
 
 Read-only TCP/UDP byte throughput is not generally available from stock router
 kernel counters. The exporter therefore exposes byte throughput by interface

@@ -316,8 +316,9 @@ def build_fcache_wan_samples(
     base_labels = {"router": config.router_label}
     help_text = (
         "Best-effort WAN bytes attributed from Broadcom flow-cache active-flow "
-        "deltas by IP stack. Starts at exporter start and may miss flows that "
-        "begin and end between scrapes."
+        "deltas by IP stack. Starts at exporter start, may miss flows that "
+        "begin and end between scrapes, and may undercount hardware-hit bytes "
+        "on accelerated firmware."
     )
     for direction in ("receive", "transmit"):
         for ip_stack in ("ipv4", "ipv6"):

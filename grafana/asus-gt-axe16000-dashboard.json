@@ -910,9 +910,9 @@
           "refId": "B"
         }
       ],
-      "title": "WAN IPv4/IPv6 Attribution (Mbps)",
+      "title": "Flow-Cache Stack Hints (Mbps)",
       "type": "timeseries",
-      "description": "Best-effort IPv4/IPv6 WAN attribution from Broadcom flow-cache active-flow deltas. Use WAN Throughput panels for authoritative interface totals."
+      "description": "Diagnostic only: derived from Broadcom flow-cache active-flow TotalBytes. This undercounts hardware-hit byte volume on observed firmware and is not additive to WAN Throughput."
     },
     {
       "datasource": {
@@ -1030,9 +1030,9 @@
           "refId": "B"
         }
       ],
-      "title": "WAN IPv4/IPv6 Attribution (MiB/s)",
+      "title": "Flow-Cache Stack Hints (MiB/s)",
       "type": "timeseries",
-      "description": "Best-effort IPv4/IPv6 WAN attribution from Broadcom flow-cache active-flow deltas. Use WAN Throughput panels for authoritative interface totals."
+      "description": "Diagnostic only: derived from Broadcom flow-cache active-flow TotalBytes. This undercounts hardware-hit byte volume on observed firmware and is not additive to WAN Throughput."
     },
     {
       "datasource": {
@@ -1632,6 +1632,6 @@
   "timezone": "browser",
   "title": "ASUS GT-AXE16000",
   "uid": "asus-gt-axe16000",
-  "version": 9,
+  "version": 10,
   "weekStart": ""
 }
